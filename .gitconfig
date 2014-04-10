@@ -1,0 +1,80 @@
+[user]
+    name = Alessandro Madruga Correia
+    email = amcorreia@zarathustra.com.br
+[github]
+    user = amcorreia
+[core]
+    editor = emacs
+    autocrlf = input
+ 
+#[diff]
+    #guitool = meld
+    #external = git-diff-wrapper.sh
+
+#[merge]
+#    tool = meld
+
+[log]
+    decorate = full
+
+[color]
+    diff = true
+    grep = true
+    status = true
+    ui = true
+
+    [color "diff"]
+        meta = normal
+        frag = magenta bold
+        old = red bold
+        new = blue bold
+        whitespace = red reverse
+
+    [color "branch"]
+        current = yellow reverse
+        local = yellow
+        remote = green
+
+    [color "status"]
+        added = yellow
+        changed = green
+        untracked = cyan
+
+[alias]
+	st   = status -s
+	ci   = commit -a
+	cm   = commit -m
+	cim  = commit -a -m
+	b    = branch
+	ba   = branch -a
+	bt   = branch --track
+	co   = checkout
+	cob  = checkout -b
+	cot  = checkout --track
+	d    = diff
+	dw   = diff --word-diff
+	dr   = diff --raw
+	ds   = diff --stat
+	l    = log
+	lp   = log -p
+	lw   = log -p --word-diff
+	ls   = log --stat
+	lr   = log --raw
+	lg   = log --graph
+	lo   = log --pretty=oneline
+	f    = fetch
+	ph   = push
+	pl   = pull
+#	r    = remote
+	rs   = remote show
+	ra   = remote add
+	rd   = remote del
+	lsf  = ls-files
+	m    = merge
+	cl   = clean -fdx
+	t    = tag
+	ui   = update-index
+
+[rerere]
+	enabled = 1
+
