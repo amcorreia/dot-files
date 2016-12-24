@@ -31,10 +31,12 @@ weechat() {
     del_stopped weechat
     # relies_on notify_osd
 
-        #-v "${HOME}/.weechat:/home/user/.weechat" \
+        #--user $USER \
     docker run --rm -it \
         -v /etc/localtime:/etc/localtime:ro \
+        -v "${HOME}/.weechat:/home/user/.weechat" \
         --name weechat \
+        --label weechat \
         ${DOCKER_REPO_PREFIX}/weechat
 }
 
@@ -90,4 +92,22 @@ wiki() {
         ${DOCKER_REPO_PREFIX}/dokuwiki
 }
 
+skype(){
+    del_stopped skype
+    relies_on pulseaudio
+
+    docker run -d                                 \
+        --volume /etc/localtime:/etc/localtime:ro \
+        --volume /tmp/.X11-unix:/tmp/.X11-unix    \
+        --link pulseaudio:pulseaudio              \
+        --env "DISPLAY=unix${DISPLAY}"            \
+        --env PULSE_SERVER=pulseaudio             \
+        --security-opt seccomp:unconfined         \
+        --device /dev/video0                      \
+        --group-add video                         \
+        --group-add audio                         \
+        --hostname skype                          \
+        --name skype                              \
+        ${DOCKER_REPO_PREFIX}/skype
+}
 
