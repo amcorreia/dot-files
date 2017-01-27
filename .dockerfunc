@@ -111,3 +111,18 @@ skype(){
         ${DOCKER_REPO_PREFIX}/skype
 }
 
+python3-docker() {
+    docker run -it --rm                   \
+           --name my-running-script       \
+           --volume "$PWD":/usr/src/myapp \
+           --workdir /usr/src/myapp       \
+           python:3 python "$1"
+}
+
+python2-docker() {
+    docker run -it --rm                   \
+           --name my-running-script       \
+           --volume "$PWD":/usr/src/myapp \
+           --workdir /usr/src/myapp       \
+           python:2 python "$1"
+}
