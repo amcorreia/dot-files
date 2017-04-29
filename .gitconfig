@@ -11,8 +11,8 @@
     #guitool = meld
     #external = git-diff-wrapper.sh
 
-[merge]
-    tool = meld
+#[merge]
+#    tool = meld
 
 [log]
     decorate = full

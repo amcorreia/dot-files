@@ -31,12 +31,11 @@ weechat() {
     del_stopped weechat
     # relies_on notify_osd
 
-        #--user $USER \
     docker run --rm -it \
         -v /etc/localtime:/etc/localtime:ro \
         -v "${HOME}/.weechat:/home/user/.weechat" \
+        --read-only \
         --name weechat \
-        --label weechat \
         ${DOCKER_REPO_PREFIX}/weechat
 }
 
@@ -92,37 +91,13 @@ wiki() {
         ${DOCKER_REPO_PREFIX}/dokuwiki
 }
 
-skype(){
-    del_stopped skype
-    relies_on pulseaudio
 
-    docker run -d                                 \
-        --volume /etc/localtime:/etc/localtime:ro \
-        --volume /tmp/.X11-unix:/tmp/.X11-unix    \
-        --link pulseaudio:pulseaudio              \
-        --env "DISPLAY=unix${DISPLAY}"            \
-        --env PULSE_SERVER=pulseaudio             \
-        --security-opt seccomp:unconfined         \
-        --device /dev/video0                      \
-        --group-add video                         \
-        --group-add audio                         \
-        --hostname skype                          \
-        --name skype                              \
-        ${DOCKER_REPO_PREFIX}/skype
+python-docker() {
+    docker run -it --rm              \
+        --name my-running-script     \
+        -v "$PWD":/usr/src/myapp     \
+        -w /usr/src/myapp            \
+        python:3.5                   \
+        python ${1}
 }
 
-python3-docker() {
-    docker run -it --rm                   \
-           --name my-running-script       \
-           --volume "$PWD":/usr/src/myapp \
-           --workdir /usr/src/myapp       \
-           python:3 python "$1"
-}
-
-python2-docker() {
-    docker run -it --rm                   \
-           --name my-running-script       \
-           --volume "$PWD":/usr/src/myapp \
-           --workdir /usr/src/myapp       \
-           python:2 python "$1"
-}
