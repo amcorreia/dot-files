@@ -1,8 +1,12 @@
 
 export DOCKER_REPO_PREFIX=amcorreia
 
-del_dangling(){
+del_dangling_image(){
     docker rmi -f $(docker images -f "dangling=true" -q)
+}
+
+del_dangling_volume(){
+    docker volume rm $(docker volume ls -qf dangling=true)
 }
 
 del_stopped(){
@@ -83,14 +87,18 @@ chrome(){
 wiki() {
     del_stopped wiki
 
-    docker run --rm -it \
-        -v /etc/localtime:/etc/localtime:ro \
-        -v "${HOME}/.weechat:/home/user/.weechat" \
-        --read-only \
+    #docker run --rm -it \
+    docker run --detach \
+        --volume dokuwiki-data:/dokuwiki/data  \
+        --volume dokuwiki-plugins:/dokuwiki/lib/plugins \
+        --volume dokuwiki-conf:/dokuwiki/conf \
+        --volume dokuwiki-tpl:/dokuwiki/lib/tpl \
+        -e TZ=America/Sao_Paulo \
+        --publish 80:80 \
         --name wiki \
-        ${DOCKER_REPO_PREFIX}/dokuwiki
-}
+        ${DOCKER_REPO_PREFIX}/docker-dokuwiki
 
+}
 
 python-docker() {
     docker run -it --rm              \
@@ -100,4 +108,49 @@ python-docker() {
         python:3.5                   \
         python ${1}
 }
+
+torproxy() {
+    del_stopped torproxy
+
+    docker run --interactive --tty --rm \
+        --restart always \
+        --publish 9050:9050 \
+        --name torproxy \
+        ${DOCKER_REPO_PREFIX}/docker-torproxy
+}
+
+teamviewer() {
+    del_stopped teamviewer
+
+    docker run --detach --tty --rm \
+        -v /tmp/.X11-unix:/tmp/.X11-unix \
+        --name teamviewer \
+        ${DOCKER_REPO_PREFIX}/docker-teamviewer
+}
+
+hipchat() {
+    del_stopped hipchat
+
+    docker run --detach --tty --rm \
+        --volume /tmp/.X11-unix:/tmp/.X11-unix \
+        --device /dev/video0 \
+        --device /dev/snd \
+        --group-add audio \
+        -e DISPLAY=unix$DISPLAY \
+        --name hipchat \
+        ${DOCKER_REPO_PREFIX}/docker-hipchat
+}
+
+mysql-workbench() {
+    del_stopped workbench
+
+# need option to pass '--link' and '--net'
+
+    docker run --detach --tty --rm \
+        --volume /tmp/.X11-unix:/tmp/.X11-unix \
+        -e DISPLAY=unix$DISPLAY \
+        --name workbench \
+        ${DOCKER_REPO_PREFIX}/docker-mysql-workbench
+}
+
 
