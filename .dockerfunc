@@ -35,12 +35,22 @@ weechat() {
     del_stopped weechat
     # relies_on notify_osd
 
+    local args=$*
+    if [[ "$1" == "tor" ]]; then
+        relies_on torproxy
+
+        map="MAP * ~NOTFOUND , EXCLUDE torproxy"
+        proxy="socks5://torproxy:9050"
+        args="--link torproxy:torproxy"
+    fi
+
     docker run --rm -it \
-        -v /etc/localtime:/etc/localtime:ro \
-        -v "${HOME}/.weechat:/home/user/.weechat" \
+        --volume /etc/localtime:/etc/localtime:ro \
+        --volume "${HOME}/.weechat:/home/user/.weechat" \
         --read-only \
+        $args \
         --name weechat \
-        ${DOCKER_REPO_PREFIX}/weechat
+        ${DOCKER_REPO_PREFIX}/docker-weechat
 }
 
 chrome(){
@@ -112,8 +122,8 @@ python-docker() {
 torproxy() {
     del_stopped torproxy
 
-    docker run --interactive --tty --rm \
-        --restart always \
+        #--restart always \
+    docker run --detach --tty --rm \
         --publish 9050:9050 \
         --name torproxy \
         ${DOCKER_REPO_PREFIX}/docker-torproxy
@@ -141,16 +151,81 @@ hipchat() {
         ${DOCKER_REPO_PREFIX}/docker-hipchat
 }
 
-mysql-workbench() {
+mysql-workbench-raw() {
     del_stopped workbench
 
-# need option to pass '--link' and '--net'
-
-    docker run --detach --tty --rm \
+    # need option to pass '--link' and '--net'
+    # if need connect in specific container, pass by param
+    docker run --detach --tty --rm $* \
         --volume /tmp/.X11-unix:/tmp/.X11-unix \
+        --volume $HOME/.mysql/:/root/.mysql \
         -e DISPLAY=unix$DISPLAY \
         --name workbench \
         ${DOCKER_REPO_PREFIX}/docker-mysql-workbench
 }
 
+mysql-workbench() {
+    local container=$1
+    local running_container_name=$(docker ps | grep $container | grep mariadb | awk '{print $11}')
+    local container_network=$(docker network ls | grep $container | awk '{print $2}')
 
+    mysql-workbench-raw --net $container_network --link $running_container_name:mariadb
+}
+
+dbschema() {
+
+    docker run --detach --tty --rm \
+        --volume /tmp/.X11-unix:/tmp/.X11-unix \
+        -e DISPLAY=unix$DISPLAY \
+        --name dbschema \
+        ${DOCKER_REPO_PREFIX}/docker-dbschema
+}
+
+docker-emacs() {
+    del_stopped emacs
+
+    docker run --detach --tty --rm \
+        --volume /tmp/.X11-unix:/tmp/.X11-unix \
+        --volume $HOME:/home/user \
+        --env DISPLAY=unix$DISPLAY \
+        --name emacs \
+        ${DOCKER_REPO_PREFIX}/docker-emacs:26.1
+}
+
+docker-slack() {
+    del_stopped slack
+
+    docker run --detach --tty --rm \
+        --volume /tmp/.X11-unix:/tmp/.X11-unix \
+        --volume $HOME:/home/user \
+        --env DISPLAY=unix$DISPLAY \
+        --device /dev/snd \
+        --device /dev/dri \
+        --group-add audio \
+        --group-add video \
+        --ipc="host" \
+        --volume $HOME/.slack:/root/.config/Slack \
+        --name slack \
+        ${DOCKER_REPO_PREFIX}/docker-slack
+}
+
+docker-pgadmin() {
+
+    del_stopped pgadmin
+
+        #--link some-postgres:postgres \
+    docker run --detach --tty --rm --name pgadmin \
+        $* \
+        -p 5050:5050 \
+        fenglc/pgadmin4
+}
+
+docker-portainer() {
+
+    docker run --detach  \
+        -p 9000:9000 \
+        --volume /var/run/docker.sock:/var/run/docker.sock \
+        --volume portainer_data:/data \
+        --name portainer \
+        portainer/portainer
+}
